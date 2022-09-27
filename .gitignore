@@ -1,0 +1,9 @@
+.vs
+cmake-build-debug
+cmake-build-debug-mingw
+CMakeLists.txt
+CMakeSettings.json
+.idea
+__pycache__
+.git
+out

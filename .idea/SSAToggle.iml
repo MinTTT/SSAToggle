@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/.vs/SSAToggle/FileContentIndex/merges" />
+      <excludeFolder url="file://$MODULE_DIR$/cmake-build-debug/CMakeFiles/3.23.2/CompilerIdC/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/cmake-build-debug/CMakeFiles/3.23.2/CompilerIdCXX/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/cmake-build-debug/CMakeFiles/CMakeTmp" />
+      <excludeFolder url="file://$MODULE_DIR$/cmake-build-debug/CMakeFiles/SSAToggle.dir" />
+      <excludeFolder url="file://$MODULE_DIR$/cmake-build-debug-mingw/CMakeFiles/3.23.2/CompilerIdC/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/cmake-build-debug-mingw/CMakeFiles/3.23.2/CompilerIdCXX/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/cmake-build-debug-mingw/CMakeFiles/CMakeTmp" />
+    </content>
     <orderEntry type="jdk" jdkName="Python 3.7" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
