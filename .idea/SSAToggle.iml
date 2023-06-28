@@ -11,10 +11,15 @@
       <excludeFolder url="file://$MODULE_DIR$/cmake-build-debug-mingw/CMakeFiles/3.23.2/CompilerIdCXX/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/cmake-build-debug-mingw/CMakeFiles/CMakeTmp" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="C:\Users\pan_c\anaconda3" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
+  <component name="PackageRequirementsSettings">
+    <option name="requirementsPath" value="" />
+  </component>
   <component name="PyDocumentationSettings">
+    <option name="format" value="NUMPY" />
+    <option name="myDocStringFormat" value="NumPy" />
     <option name="renderExternalDocumentation" value="true" />
   </component>
 </module>
