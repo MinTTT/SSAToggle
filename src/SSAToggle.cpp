@@ -192,8 +192,8 @@ int runSim(const double& gr, const int& green, const int& red,
 //        std::cout << "Sum P: "<< sumPropensity << "\n";
         generateTau(uniDist, gen, sumPropensity, &tau); // Generate tau
 
+        /*update the final reaction state*/
         if(t+tau > endTime){
-            /*update the final reaction state*/
             *saveSize = saveIndex;
             *(saveT + saveIndex-1) = t;
             *(saveX1 + saveIndex-1) = x[0];
@@ -206,7 +206,6 @@ int runSim(const double& gr, const int& green, const int& red,
         updateX(reaction, u1, x);
 //        std::cout << "t: " <<t<<"\n";
     }
-
     return 0;
 }
 
@@ -254,20 +253,16 @@ void appendCell(ToggleCell& cell, ToggleCell* cellpp, const int& size){
     cellpp = tempCells;
 }
 
-
+// Initializes the Toggle state of a cell, this function is identical to ToggleCell(...).
 void initCell(ToggleCell* cell, const double& startTime, const double &endTime, const double &outputTime,
               const int& initgreen, const int& initred, const int& parent, const int& lineage){
     int runsize = (int) floor((endTime-startTime ) / outputTime) +1;
-//    if(runsize < 1){
-//        runsize = 1;
-//    }
     cell->green = new int[runsize];
     cell->red = new int[runsize];
     cell->time = new double [runsize];
     *(cell->green) = initgreen;
     *(cell->red) = initred;
     *(cell->time) = startTime;
-
     cell->parent = parent;
     cell->lineage= lineage;
     cell->rcdSize = 1;
@@ -315,6 +310,7 @@ void runBatchSim(const int& threadNum, const double& gr, const int& green, const
 //    std::cout << "Mother cells Red: " << *cellsp[currentCellnum-1].red << "\n";
 
     double growthTime = dblTime;
+
     while (true){
 //        std::cout<< "Current Cell Number:" << currentCellnum <<"\t";
 //        std::cout<< "Time lapsed: " << growthTime <<"\n";
@@ -340,8 +336,8 @@ void runBatchSim(const int& threadNum, const double& gr, const int& green, const
                 for(int i=0; i<currentCellnum; ++i){
                     *(cells+i) = *(cellsp + i);
                 }
-                *cellsarray = cells;
                 delete[] cellsp;
+                *cellsarray = cells;
 //                std::cout << "delete cells \n";
             }
             break;
@@ -370,6 +366,46 @@ void runBatchSim(const int& threadNum, const double& gr, const int& green, const
     }
 }
 
+int runSim(const double& gr, const double& endTime, double* green, double* red){
+    double sumPropensity;
+    double tau = 0.0;
+    double t = 0.0;
+    int reaction;
+
+    int x[2];       // population of chemical species
+    double p[4];    // propensity of reactions
+    int u1[4][2];   // data structure for updating x[]
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<double> uniDist(0.0, 1.0); // random generator
+
+    initPars(int(*green), int(*red), x, u1);
+    while (true){
+        updateP(x, gr, p);
+        sumPropensity = sum(p);
+        generateTau(uniDist, gen, sumPropensity, &tau); // Generate tau
+        std::cout << "Tau: " << tau << "\n";
+        /*update the final reaction state*/
+        if(t+tau > endTime){
+            *green = double(x[0]);
+            *red = double(x[1]);
+//            printf("SSA_success");
+            break;
+        } else{
+            t += tau;
+        }
+        selectReaction(uniDist, gen, sumPropensity, p, &reaction);  // select a reaction
+        updateX(reaction, u1, x);
+    }
+    return 0;
+}
+
+
+
+
+
+
 int main(){
     int repeatSize = 100;
 //    cellBatch cells;
@@ -383,11 +419,15 @@ int main(){
 //        std::cout << "Cell Red: "<< Cell->red[Cell->rcdSize-1] << "\n";
 //    }
     for(int i=0; i<repeatSize; ++i){
-        cellBatch cells;
-        runBatchSim(22, 1.2, 1,1,10., 0.1, 10e6, &cells.cells, &cells.size);
-        std::cout << "Repeat Number: " << '\t' <<  i+1 << '\t' << "Cell Number:" <<  cells.size  <<'\n';
+//        cellBatch cells;
+        Cell cell = Cell(1.0, 1., 1.);
+
+        Cell* pCell;
+        pCell = &cell;
+//        runBatchSim(22, 1.2, 1,1,10., 0.1, 10e6, &cells.cells, &cells.size);
+        runSim(1.0, 0.005, &(pCell->green), &(pCell->red));
+        std::cout << "Repeat Number: " << '\t' <<  i+1 << '\t' << "Cell Green:" <<  pCell->green  <<'\n';
 
     }
     return 0;
-
 }

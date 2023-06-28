@@ -14,7 +14,7 @@ cdef extern from "SSAToggle.h":
             int * red
 
     cdef cppclass cellBatch:
-        ToggleCell * cells
+        ToggleCell* cells
         int size
 
 

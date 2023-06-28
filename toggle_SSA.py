@@ -44,7 +44,7 @@ if __name__ == '__main__':
     time_length = np.log(2) / growth_rate * 20
     time_step = .1
     test_ret = pyrunMultSim(growth_rate, green, red, time_length, time_step, threadNum=20)
-    ratio_stat = (test_ret[:, 1, :] + .1) / (test_ret[:, 2, :] + .1)
+    ratio_stat = (test_ret[:, 1, :] + .1) / (test_ret[:, 2, :] + .1)  # (Green + 1) / (Red +1 )
     ratio_stat = np.log(ratio_stat)
     gmm = GaussianMixture(n_components=2, random_state=0, verbose=1)
     # gmm.fit(ratio_stat[-1, :].reshape(-1, 1))

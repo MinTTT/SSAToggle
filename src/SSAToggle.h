@@ -3,6 +3,19 @@
 
 extern double e;
 
+struct Cell{
+    double growthRate;
+    double green;
+    double red;
+
+    Cell(double gr, double G, double R){
+        this->growthRate = gr;
+        this->green = G;
+        this->red = R;
+    }
+};
+
+
 struct ToggleCell{
     int lineage;
     int parent;
@@ -10,14 +23,28 @@ struct ToggleCell{
     double* time;
     int* green;
     int* red;
-
+    // Initializes the toggle state of a cell, and cell states are blank.
     ToggleCell(){
-        this->lineage = 0;
-        this->parent = 0;
+        this->lineage = -1;
+        this->parent = -1;
         this->rcdSize = 0;
-//        this->time = nullptr;
-//        this->green = nullptr;
-//        this->red = nullptr;
+        this->time = nullptr;
+        this->green = nullptr;
+        this->red = nullptr;
+    }
+    // Initializes the Toggle state of a cell, this function is identical to initCell(...).
+    ToggleCell(const double& startTime, const double &endTime, const double &outputTime,
+               const int& initgreen, const int& initred, const int& parent, const int& lineage){
+        int runsize = (int) floor((endTime-startTime ) / outputTime) +1;
+        this->green = new int[runsize];
+        this->red = new int[runsize];
+        this->time = new double [runsize];
+        *(this->green) = initgreen;
+        *(this->red) = initred;
+        *(this->time) = startTime;
+        this->parent = parent;
+        this->lineage= lineage;
+        this->rcdSize = 1;
     }
     ~ToggleCell(){
         if(this->time){
@@ -29,7 +56,7 @@ struct ToggleCell{
             this->red = nullptr;
         }
     }
-
+    // deep copy
     ToggleCell& operator=(ToggleCell& cellTemp){
         lineage = cellTemp.lineage;
         parent = cellTemp.parent;
@@ -65,7 +92,7 @@ struct cellBatch{
 
 };
 
-
+int runSim(const double& gr, const double& endTime, double* green, double* red);
 int runSim(const double& gr, const int& green, const int& red,
            const double& endTime, const double& outputTime, const double& t0,
            double* saveT, int* saveX1, int* saveX2, int* saveSize);
@@ -77,3 +104,5 @@ void runBatchSim(const int& threadNum, const double& gr, const int& green, const
 void freeCellArray(ToggleCell* cell, int& size);
 void freeCellMem(ToggleCell* cell);
 #endif
+
+
