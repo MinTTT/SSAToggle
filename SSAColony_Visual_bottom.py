@@ -20,8 +20,12 @@ from sklearn.mixture import GaussianMixture
 # Own module
 
 from src.toggle import pyrunSim, pyrunMultSim, pyrunBatchSim
+from CellMD3D_visulization.CellMD3D_bottom_visual import cell_vertices, cell_path
+import matplotlib.patches as mpatches
+
 from SSAColony_R2G_BatchRun import read_cells_rets
-#%%
+
+# %%
 RedColor = np.array((246, 61, 41)) / 255
 GreenColor = np.array((41, 246, 61)) / 255
 growth_rate = 1.6
@@ -44,7 +48,7 @@ test_cls = gmm.predict(ratio_stat[-2, :].reshape(-1, 1))
 
 # %%
 
-file_ps = r'Y:\Data_Raid\sunhui_code_ret\ssa_in25_colony_RunBatch.1.1\Cells\16.txt'
+file_ps = r'Y:\Data_Raid\sunhui_code_ret\ssa_in26_colony_RunBatch.7.46\Cells\22.txt'
 
 cells = read_cells_rets(file_ps)
 
@@ -58,11 +62,13 @@ cells_all_states = gmm.predict(np.log((cells_all_G + 1.) / (cells_all_R + 1.)).r
 z_top = 4
 z_bottom = -4
 location_mask = np.logical_and(cells_all_location[..., -1] > z_bottom, cells_all_location[..., -1] < z_top)
+location_index = np.where(location_mask == True)
 range_factor = 1.1
 x_bin_length = 5
 y_bin_length = 5
 z_bin_length = 2
 
+cells_p = [cell_path(0.7, cells[cell_i].p[:-1], cells[cell_i].q[:-1]) for cell_i in location_index[0]]
 
 cells_location = cells_all_location[location_mask, ...]
 cells_R = cells_all_R[location_mask]
@@ -75,9 +81,14 @@ colony_center = np.median(cells_location, axis=0)
 fig1_colony_bottom, ax1 = plt.subplots(1, 1, figsize=(15, 15))
 red_cells_loc = cells_location[cells_states != green_label]
 green_cells_loc = cells_location[cells_states == green_label]
-
-ax1.scatter(green_cells_loc[:, 0], green_cells_loc[:, 1], color=tuple(GreenColor), s=65, alpha=.6)
-ax1.scatter(red_cells_loc[:, 0], red_cells_loc[:, 1], color=tuple(RedColor), s=65, alpha=.6)
+for cell_i, cell_p in enumerate(cells_p):
+    if cells_states[cell_i] == green_label:
+        cell_color = tuple(GreenColor)
+    else:
+        cell_color = tuple(RedColor)
+    ax1.add_patch(mpatches.PathPatch(cell_p, facecolor=cell_color, edgecolor='k', alpha=0.6))
+# ax1.scatter(green_cells_loc[:, 0], green_cells_loc[:, 1], color=tuple(GreenColor), s=65, alpha=.6)
+# ax1.scatter(red_cells_loc[:, 0], red_cells_loc[:, 1], color=tuple(RedColor), s=65, alpha=.6)
 ax1.set_xlim(-150, 150)
 ax1.set_ylim(-150, 150)
 

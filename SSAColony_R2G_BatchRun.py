@@ -124,7 +124,7 @@ class Cell:
         self.R = R
         self.state = None
 
-        self.center = self.p + self.q / 2
+        self.center = (self.p + self.q) / 2
 
 
 def loadAllCells(CellFilesPath):

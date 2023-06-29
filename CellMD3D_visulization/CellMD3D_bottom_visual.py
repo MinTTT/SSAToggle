@@ -15,8 +15,23 @@ import numpy as np
 splt.whitegrid()
 from CellMD3D_visulization.CellMD3D_utility import read_cells_rets
 
+from typing import Union, Tuple, List
 
-def cell_vertices(radius, p1, p2, num=40):
+
+def cell_vertices(radius: float, p1: Union[Tuple, List], p2: Union[Tuple, List], num: int = 40):
+    """
+
+    Parameters
+    ----------
+    radius : float
+    p1 : tuple or list
+    p2 : tuple or list
+    num : int
+
+    Returns
+    -------
+
+    """
     if num % 2 != 0:
         num += 1
     vertices_num = num
@@ -55,11 +70,12 @@ def cell_vertices(radius, p1, p2, num=40):
     return vertices_path
 
 
-def cell_patches(radius, p1, p2, face_color: str, num=40):
+def cell_patches(radius: float, p1: Union[Tuple, List], p2: Union[Tuple, List], face_color: str, num=40):
     """
 
     Parameters
     ----------
+    face_color :
     radius: float
         cell radius
     p1: tuple or list
@@ -74,32 +90,36 @@ def cell_patches(radius, p1, p2, face_color: str, num=40):
     -------
 
     """
-    return mpatches.PathPatch(mpath.Path(cell_vertices(radius, p1, p2)), facecolor=face_color, edgecolor='k', alpha=.6)
+    return mpatches.PathPatch(cell_path(radius, p1, p2), facecolor=face_color, edgecolor='k', alpha=.6)
+
+
+def cell_path(radius, p1, p2):
+    return mpath.Path(cell_vertices(radius, p1, p2))
 
 
 # %%
-cells_path = r'.\CellMD3D_visulization\example_cell_data.txt'
-cells = read_cells_rets(cells_path)
+if __name__ == '__main__':
+    cells_path = r'.\CellMD3D_visulization\example_cell_data.txt'
+    cells = read_cells_rets(cells_path)
 
-cells_patches = [cell_patches(0.7, cell.p[:-1], cell.q[:-1], 'g') for cell in cells]
+    cells_patches = [cell_patches(0.7, cell.p[:-1], cell.q[:-1], 'g') for cell in cells]
 
-# radius = .1
-#
-# p1 = (5.1, 2.1)
-# p2 = (5.2, 2.2)
-#
-# vertices_path = cell_vertices(radius, p1, p2)
+    # radius = .1
+    #
+    # p1 = (5.1, 2.1)
+    # p2 = (5.2, 2.2)
+    #
+    # vertices_path = cell_vertices(radius, p1, p2)
 
-# cell_path = mpath.Path(vertices_path)
-# cell_patch = mpatches.PathPatch(cell_path, facecolor='g', edgecolor='k')
-fig1, ax1 = plt.subplots(1)
-# ax1.scatter(vertices[:, 0], vertices[:, 1])
-for cell_p in cells_patches:
+    # cell_path = mpath.Path(vertices_path)
+    # cell_patch = mpatches.PathPatch(cell_path, facecolor='g', edgecolor='k')
+    fig1, ax1 = plt.subplots(1)
+    # ax1.scatter(vertices[:, 0], vertices[:, 1])
+    for cell_p in cells_patches:
+        ax1.add_patch(cell_p)
+    # ax1.set_xlim(0, 10)
+    # ax1.set_ylim(0, 10)
+    ax1.set_xlim(-150, 150)
+    ax1.set_ylim(-150, 150)
 
-    ax1.add_patch(cell_p)
-# ax1.set_xlim(0, 10)
-# ax1.set_ylim(0, 10)
-ax1.set_xlim(-150, 150)
-ax1.set_ylim(-150, 150)
-
-fig1.show()
+    fig1.show()

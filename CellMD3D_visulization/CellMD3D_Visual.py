@@ -23,6 +23,7 @@ from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 import matplotlib.colors as mpl_color
 # from colony_process import cartesian2polar, binned_along_radius
+from CellMD3D_visulization.CellMD3D_bottom_visual import cells_patches
 import threading
 from typing import List, Optional
 from kde_scatter_plot import kde_plot

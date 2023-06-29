@@ -10,3 +10,4 @@ out
 .history
 build
 .idea
+*.xml
