@@ -157,7 +157,20 @@ void prtRet(const T (&x)[size], double t){
     std::cout << '\n';
 }
 
-
+/**
+ *
+ * @param gr cell growth rate
+ * @param green initial condition of green state
+ * @param red initial condition of red state
+ * @param endTime simulation end time (h)
+ * @param outputTime record time interval (h)
+ * @param t0 start time (h)
+ * @param[out] saveT the pointer of the first time point.
+ * @param[out] saveX1 the pointer of the first Green state point.
+ * @param[out] saveX2 the pointer of the first Red state point.
+ * @param[out] saveSize the number of time points that saved in saveT, saveX1, and saveX2 when call this function.
+ * @return 0
+ */
 int runSim(const double& gr, const int& green, const int& red,
            const double& endTime, const double& outputTime, const double& t0,
            double* saveT, int* saveX1, int* saveX2, int* saveSize){
@@ -184,7 +197,7 @@ int runSim(const double& gr, const int& green, const int& red,
             *(saveX1 + saveIndex) = x[0];
             *(saveX2 + saveIndex) = x[1];
             nextOutput += outputTime;
-            saveIndex += 1;
+            saveIndex += 1;  // next save index, and also equal to save size.
         }
         /* End save results*/
         updateP(x, gr, p);
@@ -212,7 +225,7 @@ int runSim(const double& gr, const int& green, const int& red,
 
 int rumMultiSim(const int& threadNum, const double& gr, int* green, int* red,
                       const double& endTime, const double& outputTime, int simsize, double* saveBuff, int* saveLength){
-
+    omp_set_num_threads(threadNum);
     int runSize = (int) floor(endTime / outputTime) + 1;
     double * saveT = new double[runSize*simsize];
     int* saveG = new int[runSize*simsize];
@@ -220,7 +233,7 @@ int rumMultiSim(const int& threadNum, const double& gr, int* green, int* red,
     int dim12 = 3 * simsize;
     int* sizeArray = new int[simsize];
 
-#pragma omp parallel for num_threads(threadNum)
+    #pragma omp parallel for
     for(int iSim=0; iSim < simsize; ++iSim){
 //        std::cout<< "Sim #: " << iSim << "\n";
 //        std::cout<< "Thread: " << omp_get_thread_num() << '\n';
@@ -243,7 +256,7 @@ int rumMultiSim(const int& threadNum, const double& gr, int* green, int* red,
 
 
 void appendCell(ToggleCell& cell, ToggleCell* cellpp, const int& size){
-    ToggleCell* tempCells = new ToggleCell[size + 1];
+    auto * tempCells = new ToggleCell[size + 1];
     for(int i=0; i < size; ++i){
         *(tempCells+i) = *(cellpp + i);
     }
@@ -254,9 +267,20 @@ void appendCell(ToggleCell& cell, ToggleCell* cellpp, const int& size){
 }
 
 // Initializes the Toggle state of a cell, this function is identical to ToggleCell(...).
+/**
+ * Initializes the Toggle state of a cell, this function is identical to ToggleCell(...).
+ * @param cell ToggleCell instance.
+ * @param startTime start time point.
+ * @param endTime end time point. It will determine the .green .red and .time array size. make sure that the endTime is long enough.
+ * @param outputTime time interval that determine the interval between two record points.
+ * @param initgreen
+ * @param initred
+ * @param parent
+ * @param lineage
+ */
 void initCell(ToggleCell* cell, const double& startTime, const double &endTime, const double &outputTime,
               const int& initgreen, const int& initred, const int& parent, const int& lineage){
-    int runsize = (int) floor((endTime-startTime ) / outputTime) +1;
+    int runsize = (int) floor((endTime-startTime ) / outputTime) +10;
     cell->green = new int[runsize];
     cell->red = new int[runsize];
     cell->time = new double [runsize];
@@ -290,71 +314,80 @@ void freeCellArray(ToggleCell* cells, int& size){
 }
 
 
+ /**
+  * Simulate the cells in a batch culture.
+  * @param[in] threadNum thread numbers used for simulation;
+  * @param[in] gr growth rate of cells;
+  * @param[in] green initial condition of green state;
+  * @param[in] red initial condition of red state;
+  * @param[in] endTime
+  * @param[in] outputTime
+  * @param[in] maxCell
+  * @param[out] cellsarray
+  * @param[out] cellsSize
+  */
 void runBatchSim(const int& threadNum, const double& gr, const int& green, const int& red,
       const double& endTime, const double& outputTime, const int &maxCell,
       ToggleCell** cellsarray, int* cellsSize){
-
-    double dblTime = log(2.) / gr;
+    omp_set_num_threads(threadNum);
+    double dblTime = std::log(2.) / gr;
     int totalcell = (int) floor(std::pow(e, gr * endTime) * 1.1) ; // allocate more memory resource.
-    if(totalcell >= maxCell || totalcell <0){
+    if(totalcell >= maxCell){
         totalcell = maxCell;
     }
-    ToggleCell* cellsp = new ToggleCell[totalcell];
+    auto* cellsp = new ToggleCell[totalcell];
     int currentCellnum = 1;
     int divisionCellNum;
-//    std::cout << "Estimate cells: "<< totalcell << "\n";
+    double simFinishTime = endTime;
+    double recordTimeInterval = outputTime;
 
-    initCell(&cellsp[currentCellnum-1], 0., endTime, outputTime, green, red, 0, 1);
-//    std::cout << "Mother cells: " << cellsp[currentCellnum-1].lineage << "\n";
-//    std::cout << "Mother cells Green: " << *cellsp[currentCellnum-1].green << "\n";
-//    std::cout << "Mother cells Red: " << *cellsp[currentCellnum-1].red << "\n";
+    // init the mother cell
+    initCell(&(cellsp[0]), 0.0, simFinishTime, recordTimeInterval, green, red, 0, 1);
 
-    double growthTime = dblTime;
+    double growthTime = dblTime;  // stop time of each rounds of cells growth simulation.
 
     while (true){
-//        std::cout<< "Current Cell Number:" << currentCellnum <<"\t";
-//        std::cout<< "Time lapsed: " << growthTime <<"\n";
-
-#pragma omp parallel for num_threads(threadNum)
+        // growth all cells in a doubling tine (growthTime)
+        #pragma omp parallel for
         for(int i = 0; i<currentCellnum; ++i){
-            int stari = cellsp[i].rcdSize-1;  // write the initial state again in first memory block.
+            int stari = cellsp[i].rcdSize-1;  // write the initial state again in first memory block in each growth loop.
             int greenNow = cellsp[i].green[stari];
             int redNow = cellsp[i].red[stari];
-            int recdSize=0;
-
+            int recordNumberThisLoop = 0;
             runSim(gr, greenNow, redNow, growthTime, outputTime, cellsp[i].time[stari],
-                   &cellsp[i].time[stari], &cellsp[i].green[stari], &cellsp[i].red[stari], &recdSize);
-            cellsp[i].rcdSize += (recdSize-1);
+                   &cellsp[i].time[stari], &cellsp[i].green[stari], &cellsp[i].red[stari], &recordNumberThisLoop);
+            cellsp[i].rcdSize += (recordNumberThisLoop-1);  // because of overwritten in start point, the ACTUAL recording size is recdSize-1
         }
-
-        if(growthTime==endTime){
+        // check if stop conditions acquired.
+        if(growthTime>=endTime){
             *cellsarray = cellsp;
             *cellsSize = currentCellnum;
+            // Following code was deprecated because of memory limit.
             if(currentCellnum < totalcell){
                 // if the live cell number is not extend to maximum number, we will free the memory of blank cell.
-                ToggleCell* cells = new ToggleCell[currentCellnum];
+                auto* cells = new ToggleCell[currentCellnum];
+                #pragma omp parallel for
                 for(int i=0; i<currentCellnum; ++i){
                     *(cells+i) = *(cellsp + i);
                 }
                 delete[] cellsp;
                 *cellsarray = cells;
-//                std::cout << "delete cells \n";
             }
-            break;
+            break;  // finish the simulation.
         }
 
         if(endTime - growthTime > dblTime) {
-            growthTime += dblTime;
+            growthTime += dblTime;  // if the lasting time are longer than a dbl time.
         } else{
-            growthTime = endTime;
+            growthTime = endTime;  // lasting time less than a dbl time
         }
-        // division
+        // do cell division
         if(currentCellnum*2 <= maxCell){
             divisionCellNum = currentCellnum;
         } else{
             divisionCellNum = maxCell - currentCellnum;
         }
-#pragma omp parallel for num_threads(threadNum)
+        #pragma omp parallel for shared(currentCellnum)
         for(int i = 0; i<divisionCellNum; ++i){
             ToggleCell* ptCellp = &cellsp[i];
             int rcdi = ptCellp->rcdSize-1;  // copy the cell states to daughter cell.

@@ -33,6 +33,13 @@ struct ToggleCell{
         this->red = nullptr;
     }
     // Initializes the Toggle state of a cell, this function is identical to initCell(...).
+    /**
+     * @param[in] startTime simulation start time
+     * @param[in] endTime simulation end time
+     * @param[in] outputTime time interval of two time points.
+     * @param[in] initgreen initial condition of green state.
+     * @param[in] initred initial condition of red state.
+    */
     ToggleCell(const double& startTime, const double &endTime, const double &outputTime,
                const int& initgreen, const int& initred, const int& parent, const int& lineage){
         int runsize = (int) floor((endTime-startTime ) / outputTime) +1;

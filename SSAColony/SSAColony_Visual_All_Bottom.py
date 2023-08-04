@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
+ Plot the colony bottom for a cell file.
 
  @author: Pan M. CHU
  @Email: pan_chu@outlook.com

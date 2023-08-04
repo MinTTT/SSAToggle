@@ -2,9 +2,11 @@ from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 import sciplot as splt
 import numpy as np
 from tqdm import tqdm
+
 splt.whitegrid()
 import os
 import threading
+
 red = np.array([231, 76, 60]) / 255
 white = np.array([1, 1, 1])
 green = np.array([93, 173, 226]) / 255
@@ -80,32 +82,11 @@ class Cell:
         self.center = self.p + self.q / 2
 
 
-def read_cells_rets(CellFilePath, pbar=True):
-    lines = []
-    if pbar:
-        p_bar = tqdm()
-    with open(CellFilePath) as ret_file:
-        while True:
-            line = ret_file.readline()
-            if line == '':
-                break
-            cell_pars = [float(par) for par in line.replace('\n', '').split(' ')]
-
-            cell_parameters = [np.array(cell_pars[index]) if isinstance(index, slice) else cell_pars[index]
-                               for index in paras_location]
-            lines.append(Cell(*cell_parameters))
-            if pbar:
-                p_bar.update()
-
-    return lines
-
-
-
 def loadAllCells(CellFilesPath):
     """Load all cells data from directory.
 
     Parameters:
-        CellFilesPath (str): the PATH for cells data.
+        CellFilesPath (str): the directory for cells data.
 
     Returns:
         data (List[List[Cell]]): list(list(Cell obj)
@@ -117,6 +98,7 @@ def loadAllCells(CellFilesPath):
         return None
 
     filesDir = [file.name for file in os.scandir(CellFilesPath) if file.is_file()]
+    filesDir.sort(key=lambda name: int(name.split('.')[0]))
     file_number = len(filesDir)
 
     data = [None] * file_number

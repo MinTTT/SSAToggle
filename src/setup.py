@@ -7,10 +7,10 @@ import platform
 import os
 
 if platform.system() == 'Linux':
-    os.environ["CC"] = "g++"
+    os.environ["CC"] = "gcc"
     ext_modules = [Extension("toggle", ["toggle.pyx", "SSAToggle.cpp"], language='c++',
                              include_dirs=[numpy.get_include()],
-                             extra_compile_args=['-fopenmp', '-O3'],
+                             extra_compile_args=['-fopenmp', '-lstdc++'],
                              extra_link_args=['-fopenmp']
                              )]
 else:

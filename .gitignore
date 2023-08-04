@@ -11,3 +11,5 @@ out
 build
 .idea
 *.xml
+Data
+discrimination_model

@@ -8,19 +8,17 @@
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-import os
 import sciplot as splt
 import numpy as np
+from CellMD3D_visulization.CellMD3D_utility import read_cells_rets
+from typing import Union, Tuple, List
 
 splt.whitegrid()
-from CellMD3D_visulization.CellMD3D_utility import read_cells_rets
-
-from typing import Union, Tuple, List
 
 
 def cell_vertices(radius: float, p1: Union[Tuple, List], p2: Union[Tuple, List], num: int = 40):
     """
-
+    Generate cell's vertices in 2D.
     Parameters
     ----------
     radius : float
@@ -49,10 +47,8 @@ def cell_vertices(radius: float, p1: Union[Tuple, List], p2: Union[Tuple, List],
     half_index = int(vertices_num / 2)
     vertices = np.ones((vertices_num, 2))
     vertices[:, 0] = np.cos(rho) * radius
-    # vertices[half_index+1:-1, 0] = np.cos(rho[half_index-1:]) * radius
 
     vertices[:, 1] = np.sin(rho) * radius
-    # vertices[half_index+1:-1, 1] = np.sin(rho[half_index-1:]) * radius
 
     dot_vertices = np.dot(vertices, direction)
     p1_mask = dot_vertices <= 0
@@ -82,19 +78,20 @@ def cell_patches(radius: float, p1: Union[Tuple, List], p2: Union[Tuple, List], 
         first sphere (x, y)
     p2: tuple or list
         second sphere (x, y)
-    facecolor: string or color code
+    face_color: string or color code
         cell color
-    num
+    num: int
+        vertices number of the cell
 
     Returns
     -------
 
     """
-    return mpatches.PathPatch(cell_path(radius, p1, p2), facecolor=face_color, edgecolor='k', alpha=.6)
+    return mpatches.PathPatch(cell_path(radius, p1, p2, num), facecolor=face_color, edgecolor='k', alpha=.6)
 
 
-def cell_path(radius, p1, p2):
-    return mpath.Path(cell_vertices(radius, p1, p2))
+def cell_path(radius, p1, p2, num=40):
+    return mpath.Path(cell_vertices(radius, p1, p2, num=num))
 
 
 # %%

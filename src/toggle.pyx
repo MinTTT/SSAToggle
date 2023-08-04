@@ -80,6 +80,7 @@ cdef class pyBatchCell:
     def __cinit__(self):
         self.ptr_owner = True
         self.cell_batch = new cellBatch()
+        self.cellsList = []
 
     def __dealloc__(self):
         del self.cell_batch
@@ -157,7 +158,26 @@ def pyrunSim(double gr, int green, int red, double initTime, double endTime, dou
 
 def pyrunMultSim(double gr, np.ndarray[np.int_t, ndim=1] green, np.ndarray[np.int_t, ndim=1] red, double endTime,
                  double outputTime, int threadNum=24):
-    """"""
+    """
+
+    Parameters
+    ----------
+    gr : float
+        cell growth rate.
+    green : np.ndarray
+        cells' initial GFP level.
+    red : np.ndarray
+        cells' initial mCherry level.
+    endTime : float
+        The total time for SSA simulation.
+    outputTime :
+    threadNum :
+
+    Returns
+    -------
+        Results
+            [Time, Cell states, Cells]. Cells sates: (current time, green level, red leve). Cells: (Cell #1, Cell #2, ...)
+    """
     cdef int sizeofSime = green.size
     # print(sizeofSime)
     cdef int sizeofTime = int(endTime // outputTime) + 1
@@ -179,11 +199,14 @@ def pyrunBatchSim(int threadNum, double gr, int green, int red,
                      double endTime, double outputTime, int maxCell,
                      ):
 
-    cdef pyBatchCell bachcell = pyBatchCell()
+    cdef pyBatchCell batch_cells = pyBatchCell()
 
     runBatchSim(threadNum,  gr, green, red, endTime, outputTime, maxCell,
-                &bachcell.cell_batch.cells, &bachcell.cell_batch.size)
+                &batch_cells.cell_batch.cells, &batch_cells.cell_batch.size)
 
-    bachcell.cellsList = [pyToggleCell.from_ptr(&bachcell.cell_batch.cells[i])
-                          for i in range(bachcell.cell_batch.size)]
-    return bachcell
+    # batch_cells.cellsList = [pyToggleCell.from_ptr(&batch_cells.cell_batch.cells[i])
+    #                       for i in range(batch_cells.cell_batch.size)]
+    for i in range(batch_cells.cell_batch.size):
+        batch_cells.cellsList.append(pyToggleCell.from_ptr(&batch_cells.cell_batch.cells[i]))
+
+    return batch_cells
